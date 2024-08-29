@@ -121,7 +121,10 @@ class postController {
 
           await likePost.save();
 
-          res.status(200).json({ message: "success " });
+          res.status(200).json({
+            message: "Success ",
+            likeCount: likePost.likes.length,
+          });
         } else {
           res.status(400).json({ message: "Error Login token expaire." });
         }
