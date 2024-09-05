@@ -135,6 +135,71 @@ class postController {
       res.status(500).json({ message: "Error did't add follower." });
     }
   });
+
+  static getSinglePost = asyncHandler(async (req, res) => {
+    try {
+      const id = req.path.split("/")[2];
+
+      const singlePost = await postModel
+        .findById({ _id: id })
+        .populate("creatorId");
+      if (singlePost) {
+        res.status(200).json({ message: "success", data: singlePost });
+      } else {
+        res.status(400).json({ message: "Not found single Post with by ID" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "can not get single post." });
+    }
+  });
+
+  static updatePost = asyncHandler(async (req, res) => {
+    const path = req.path.split("/")[2];
+
+    try {
+      const image = req?.file?.path || "";
+      const post = req.body.post;
+      const existPost = await postModel.findById({ _id: path });
+      if (existPost) {
+        if (post && image && image !== "") {
+          const responseUrl = await cloudinaryService(image);
+          await postModel.findByIdAndUpdate(
+            { _id: path },
+            { $set: { poster: responseUrl.secure_url, description: post } },
+            { new: true }
+          );
+          res.status(200).json({ message: "success edit your post." });
+          return;
+        } else if (post) {
+          await postModel.findByIdAndUpdate(
+            { _id: path },
+            { $set: { description: post } },
+            { new: true }
+          );
+          res.status(200).json({ message: "success edit your post." });
+          return;
+        } else {
+          res
+            .status(400)
+            .json({ message: "Need your necessary critiantials." });
+        }
+      } else {
+        res.status(400).json({ message: "can not find your post." });
+      }
+      res.status(200).json({ image, post });
+    } catch (error) {
+      res.status(500).json({ message: "can not update your post." });
+    }
+  });
+  static deletePost = asyncHandler(async (req, res) => {
+    const path = req.path.split("/")[2];
+    try {
+      await postModel.findByIdAndDelete({ _id: path });
+      res.status(200).json({ message: "Delete your post." });
+    } catch (error) {
+      res.status(500).json({ message: "can not delete your post" });
+    }
+  });
 }
 
 module.exports = postController;
