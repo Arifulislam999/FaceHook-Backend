@@ -381,5 +381,89 @@ class userController {
       res.status(500).json({ message: "Error did't add follower." });
     }
   });
+  //reset password
+  static resetPassword = asyncHandler(async (req, res) => {
+    const email = req.body.data;
+    try {
+      const existUser = await userModel.findOne({ email: email });
+
+      if (existUser && email) {
+        const { _id, firstName, lastName } = existUser;
+        const resetToken = generateToken(_id);
+        res.cookie("resetPasswordToken", resetToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          maxAge: 600000, // 10 minutes in milliseconds
+        });
+
+        // prepare email
+        const emailData = {
+          email,
+          subject: "Reset Password With Email",
+          html: `<h2>Hello ${firstName} ${lastName}!</h2>         
+              <p> The validity of this verification link is only 10 minutes, if the password is not changed within 10 minutes then this link will lose its ability to work. <br/><br/> Please click here to reset your LinkSy account password <a href="${process.env.CLIENT_URL}/confirm-password?token=${resetToken}&id=${_id}" target="_blank">Reset Account</a></p>
+              `,
+        };
+        await sendEmailNodeMailer(emailData);
+        res
+          .status(200)
+          .json({ message: "Success! Sending,Check Your Email Address." });
+      } else {
+        res.status(500).json({ message: "This email does't sign up yet." });
+      }
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "User not find or user credential missing." });
+    }
+  });
+
+  // confirm password
+
+  static confirmPassword = asyncHandler(async (req, res) => {
+    const { token, password, id } = req.body.data;
+    try {
+      const user = await userModel.findById({ _id: id });
+      if (user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+        const verified = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (password.length > 7) {
+          if (verified) {
+            await userModel.findByIdAndUpdate(
+              { _id: id },
+              { password: hashPassword },
+              { new: true }
+            );
+            res.status(200).json({
+              message: "Changed your password successfully.",
+              status: true,
+            });
+            return;
+          } else {
+            res.status(401).json({
+              message: "Token expired or invalid token.",
+              status: false,
+            });
+          }
+        } else {
+          res.status(401).json({
+            message: "Password must be 8 character or more.",
+            status: false,
+          });
+        }
+      } else {
+        res
+          .status(400)
+          .json({ message: "User credential missing.", status: false });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "User not find or user credential missing.",
+        status: false,
+      });
+    }
+  });
 }
 module.exports = userController;

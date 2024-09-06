@@ -8,11 +8,13 @@ const router = express.Router();
 
 router.post("/register", userController.userRegistation);
 router.post("/login", userController.userLogin);
-router.get("/loggedin", protectedRoute, userController.userLoggedInStatus);
-router.get("/logout", userController.userLogOut);
-
-// protected Route
 router.get("/activation-account", userController.activateUserAccount);
+router.get("/logout", userController.userLogOut);
+router.post("/forget-password", userController.resetPassword);
+router.patch("/confirm-password", userController.confirmPassword);
+// protected Route
+router.get("/loggedin", protectedRoute, userController.userLoggedInStatus);
+
 router.patch("/updatebio", protectedRoute, userController.userBioUpdate);
 router.get("/single-user/:id", protectedRoute, userController.getSingleUser);
 router.patch("/followers", protectedRoute, userController.addFollower);
