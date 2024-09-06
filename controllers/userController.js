@@ -402,7 +402,7 @@ class userController {
           email,
           subject: "Reset Password With Email",
           html: `<h2>Hello ${firstName} ${lastName}!</h2>         
-              <p> The validity of this verification link is only 10 minutes, if the password is not changed within 10 minutes then this link will lose its ability to work. <br/><br/> Please click here to reset your LinkSy account password <a href="${process.env.CLIENT_URL}/confirm-password?token=${resetToken}&id=${_id}" target="_blank">Reset Account</a></p>
+              <p> The validity of this verification link is only 10 minutes, if the password is not changed within 10 minutes then this link will lose its ability to work. <br/><br/> Please click here to reset your LinkSy account password <a href="${process.env.CLIENT_URL}/confirm-password?token=${resetToken}&id=${_id}" target="_blank">Reset Password</a></p>
               `,
         };
         await sendEmailNodeMailer(emailData);
