@@ -100,7 +100,7 @@ class postController {
   });
   static postLike = asyncHandler(async (req, res) => {
     try {
-      const id = req.body.data;
+      const id = req.body.data.id;
 
       if (id) {
         const { _id } = req.user || {};
@@ -132,7 +132,7 @@ class postController {
         res.status(400).json({ message: "Error Not a valid User." });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error did't add follower." });
+      res.status(500).json({ message: "Error did't add Like." });
     }
   });
 

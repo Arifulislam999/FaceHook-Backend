@@ -348,7 +348,7 @@ class userController {
   // follower
   static addFollower = asyncHandler(async (req, res) => {
     try {
-      const id = req.body.data;
+      const id = req.body.data.userId;
 
       if (id) {
         const { _id } = req.user || {};
