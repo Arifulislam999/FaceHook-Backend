@@ -49,7 +49,7 @@ class postController {
       const { _id } = req.user || {};
       if (_id) {
         const allPost = await postModel
-          .find()
+          .find({ creatorId: { $ne: _id } })
           .sort({ createdAt: -1 })
           .populate("creatorId");
 
