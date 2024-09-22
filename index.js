@@ -7,6 +7,7 @@ const connectDB = require("./utils/db");
 const userRouter = require("./routes/userRoute");
 const postRouter = require("./routes/postRoute");
 const notificationRouter = require("./routes/notificationRoute");
+const chatRouter = require("./routes/messageRoute");
 
 const app = express();
 const port = process.env.PORT || 9001;
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/notification", notificationRouter);
+app.use("/api/message", chatRouter);
 
 app.listen(port, () => {
   console.log(`Your Port is running http://localahost:${port}`);
