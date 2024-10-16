@@ -18,6 +18,9 @@ router.get("/loggedin", protectedRoute, userController.userLoggedInStatus);
 router.patch("/updatebio", protectedRoute, userController.userBioUpdate);
 router.get("/single-user/:id", protectedRoute, userController.getSingleUser);
 router.patch("/followers", protectedRoute, userController.addFollower);
+router.post("/follower-decline", protectedRoute, userController.followDecline);
+router.patch("/follow-accept", protectedRoute, userController.followerAccept);
+
 router.patch(
   "/upload-image",
   protectedRoute,

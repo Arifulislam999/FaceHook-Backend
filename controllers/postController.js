@@ -9,6 +9,8 @@ class postController {
       const { _id } = req.user || {};
       const image = req.file.path;
       const post = req.body.post;
+      const isPublic = req.body.isPublic;
+
       const { isValidEmail } = await userModel.findById(_id);
       if (isValidEmail) {
         if (_id) {
@@ -18,6 +20,7 @@ class postController {
               creatorId: _id,
               poster: response.secure_url,
               description: post,
+              isPublic,
               likes: [],
               comments: [],
             });
@@ -49,7 +52,10 @@ class postController {
       const { _id } = req.user || {};
       if (_id) {
         const allPost = await postModel
-          .find({ creatorId: { $ne: _id } })
+          .find({
+            creatorId: { $ne: _id },
+            $or: [{ isPublic: true }, { isPublic: { $exists: false } }], //  Handle missing isPublic
+          })
           .sort({ createdAt: -1 })
           .populate("creatorId");
 

@@ -29,6 +29,10 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    actionFollowStatus: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

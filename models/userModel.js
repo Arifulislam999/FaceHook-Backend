@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "users",
       },
+      followStatus: {
+        type: String,
+        required: false,
+        default: "no",
+      },
     },
   ],
   bio: {

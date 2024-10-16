@@ -1,6 +1,6 @@
-import { Server } from "socket.io";
-import http from "http";
-import express from "express";
+const { Server } = require("socket.io");
+const http = require("http");
+const express = require("express");
 
 const app = express();
 
@@ -13,4 +13,12 @@ const io = new Server(server, {
   },
 });
 
-export { app, server, io };
+io.on("connection", (socket) => {
+  console.log("a user connected.", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected", socket.id);
+  });
+});
+
+module.exports = { app, server, io };

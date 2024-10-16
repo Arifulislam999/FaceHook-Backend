@@ -6,6 +6,7 @@ const validEmailChacker = require("../utils/validEmailChecker");
 const cloudinaryService = require("../config/cloudinaryUploader");
 const sendEmailNodeMailer = require("../utils/sendEmail");
 const postModel = require("../models/postModel");
+const notificationModel = require("../models/notificationModel");
 // Generate Web Token.
 const generateToken = (id) => {
   return jwt.sign({ userId: id }, process.env.JWT_SECRET_KEY, {
@@ -69,7 +70,7 @@ class userController {
               email,
               subject: "Account Activation Email.",
               html: `<h2>Hello ${firstName} ${lastName}!</h2>
-              <p>Please click here to activate your FaceHook account <a href="${process.env.SERVER_URL}/api/user/activation-account?token=${token}" target="_blank">Activate Account</a></p>
+              <p>Please click here to activate your <h3>LinkSy</h3> account <a href="${process.env.SERVER_URL}/api/user/activation-account?token=${token}" target="_blank">Activate Account</a></p>
               `,
             };
 
@@ -155,6 +156,7 @@ class userController {
 
   static userLogOut = asyncHandler(async (req, res) => {
     // reactCookis.remove("token", { path: "/api/user/loggedin" });
+    console.log("logout");
     res.clearCookie("token");
     res.status(200).json("user successfully Logged Out.");
   });
@@ -354,6 +356,7 @@ class userController {
         const { _id } = req.user || {};
         if (_id) {
           const followerUser = await userModel.findById(id);
+          const myFollower = await userModel.findById(_id);
           const followerExists = followerUser.followers.some((follower) =>
             follower.followerUserId.equals(_id)
           );
@@ -362,15 +365,20 @@ class userController {
             followerUser.followers = followerUser.followers.filter(
               (follower) => !follower.followerUserId.equals(_id)
             );
+            // remove form my account follower
+            myFollower.followers = myFollower.followers.filter(
+              (follower) => !follower.followerUserId.equals(id)
+            );
           } else {
             followerUser.followers.push({
               followerUserId: _id,
+              followStatus: "pending",
             });
           }
-
           await followerUser.save();
+          await myFollower.save();
 
-          res.status(200).json({ message: "success " });
+          res.status(200).json({ message: "success" });
         } else {
           res.status(400).json({ message: "Error Login token expaire." });
         }
@@ -381,6 +389,95 @@ class userController {
       res.status(500).json({ message: "Error did't add follower." });
     }
   });
+
+  // follow decline controller
+
+  static followDecline = asyncHandler(async (req, res) => {
+    try {
+      const followerId = req.body.data.reactUserId || {};
+      const notificationId = req.body.data.notificationId || {};
+
+      if (followerId) {
+        const { _id } = req.user || {};
+        if (_id) {
+          const me = await userModel.findById(_id);
+          const followerExists = me.followers.some((follower) =>
+            follower.followerUserId.equals(followerId)
+          );
+
+          if (followerExists) {
+            me.followers = me.followers.filter(
+              (follower) => !follower.followerUserId.equals(followerId)
+            );
+            await notificationModel.findByIdAndUpdate(
+              {
+                _id: notificationId,
+              },
+              { actionFollowStatus: "decline" },
+              { new: true }
+            );
+
+            await me.save();
+            res.status(200).json({ message: "success" });
+          } else {
+            res.status(400).json({ message: "Did't follow you this person." });
+          }
+        } else {
+          res.status(400).json({ message: "Error Login token expaire." });
+        }
+      } else {
+        res.status(400).json({ message: "Error did't received any Id" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error did't decline follower." });
+    }
+  });
+
+  // followerAccept
+
+  static followerAccept = asyncHandler(async (req, res) => {
+    try {
+      const { _id } = req.user || {};
+      const followUserId = req.body.data.reactUserId;
+      const notificationId = req.body.data.notificationId;
+      const me = await userModel.findById(_id);
+      const followerUser = await userModel.findById({ _id: followUserId });
+      if (me && followerUser) {
+        await userModel.updateOne(
+          {
+            _id,
+            "followers.followerUserId": followUserId,
+          },
+          { $set: { "followers.$.followStatus": "success" } }
+        );
+        const ll = await userModel.updateOne(
+          { _id: followUserId },
+          {
+            $push: {
+              followers: { followStatus: "success", followerUserId: _id },
+            },
+          }
+        );
+        await notificationModel.findByIdAndUpdate(
+          {
+            _id: notificationId,
+          },
+          { actionFollowStatus: "success" },
+          { new: true }
+        );
+        res.status(200).json({ ll });
+      } else {
+        res
+          .status(400)
+          .json({ message: "Error did't find any login or follower user." });
+      }
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error did't accept follower.due to server error" });
+    }
+  });
+
   //reset password
   static resetPassword = asyncHandler(async (req, res) => {
     const email = req.body.data;

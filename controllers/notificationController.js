@@ -14,6 +14,7 @@ class notificationController {
             postId,
             postCreatorId,
             action,
+            actionFollowStatus: action === "Follow" ? "panding" : "no",
             reactUserId: _id,
             reactUserImg: profile,
             actionCreatorName: firstName + " " + lastName,
