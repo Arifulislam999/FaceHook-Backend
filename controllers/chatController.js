@@ -7,15 +7,55 @@ class chatController {
   static getAllChatFollower = asyncHandler(async (req, res) => {
     try {
       const { _id } = req.user || {};
-      if (_id) {
-        const followerUser = await userModel.find({
-          followers: {
-            $elemMatch: { followerUserId: _id, followStatus: "success" },
-          },
+      let id = req.query.id || _id;
+      if (id) {
+        const followerUser = await userModel
+          .find({
+            followers: {
+              $elemMatch: { followerUserId: id, followStatus: "success" },
+            },
+          })
+          .select(["-password", "-followers"]);
+        let followerUserArray = [];
+        followerUser?.forEach((f) => followerUserArray.push(f?._id));
+
+        // collect message
+
+        let messages;
+        if (followerUserArray) {
+          messages = await Promise.all(
+            followerUserArray?.map(async (followerId) => {
+              const conversation = await conversationModel
+                .findOne({
+                  participants: { $all: [id, followerId] },
+                })
+                .populate({
+                  path: "messages",
+                  options: { sort: { _id: -1 }, limit: 1 }, // Sort by _id in descending order, limit to 1
+                });
+
+              return conversation;
+            })
+          );
+        }
+        const updateData = followerUser?.map((user) => {
+          const matchMessage = messages.find((message) =>
+            message?.participants.includes(user._id)
+          );
+          if (matchMessage) {
+            return {
+              ...user,
+              messages: matchMessage.messages,
+            };
+          }
+          return user;
         });
-        res
-          .status(200)
-          .json({ message: "success", data: followerUser, status: true });
+
+        res.status(200).json({
+          message: "success",
+          status: true,
+          lastmessage: updateData,
+        });
         return;
       } else {
         res
