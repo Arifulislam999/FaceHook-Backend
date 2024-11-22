@@ -26,7 +26,7 @@ io.on("connection", async (socket) => {
       activeUsers.push({ userId, socketId: socket.id }); // Add user to active list
     }
 
-    // console.log("Active users:", activeUsers);
+    console.log("Active users:", activeUsers);
 
     // Send the updated list of active users to all clients
     io.emit(
