@@ -124,7 +124,6 @@ class chatController {
       res.status(500).json({ message: "Error can't find any message." });
     }
   });
-
   static getSingleUserForChat = asyncHandler(async (req, res) => {
     try {
       const { id } = req.params || {};
