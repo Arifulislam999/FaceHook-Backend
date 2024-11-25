@@ -8,6 +8,7 @@ const userRouter = require("./routes/userRoute");
 const postRouter = require("./routes/postRoute");
 const notificationRouter = require("./routes/notificationRoute");
 const chatRouter = require("./routes/messageRoute");
+const favouriteRouter = require("./routes/favouriteRoute");
 const { server, app } = require("./socket/socket");
 
 // const app = express();
@@ -33,6 +34,7 @@ app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/message", chatRouter);
+app.use("/api/favourite", favouriteRouter);
 
 server.listen(port, () => {
   console.log(`Your Port is running http://localahost:${port}`);
