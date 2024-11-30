@@ -81,6 +81,7 @@ class favouriteController {
         res.status(200).json({
           message: "success",
           status: user ? (existUser ? true : false) : false,
+          user,
         });
       } else {
         res.status(401).json({ message: "Error Login token expaire." });

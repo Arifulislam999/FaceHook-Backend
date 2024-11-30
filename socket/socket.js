@@ -53,7 +53,7 @@ io.on("connection", async (socket) => {
     // sample test further change
     const receiver = await userModel.findById(receiverId);
     const sender = await userModel.findById(senderId);
-    if (receiver && receiver?.socketId) {
+    if (receiver && receiver?.socketId && message?.length > 0) {
       let newMessage = {
         senderId,
         receiverId,

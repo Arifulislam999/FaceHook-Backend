@@ -24,7 +24,9 @@ class postController {
               likes: [],
               comments: [],
             });
-            res.status(200).json({ message: "Create Post successfully." });
+            res
+              .status(200)
+              .json({ message: "Create Post successfully,check profile." });
           } else {
             res
               .status(500)
@@ -165,13 +167,21 @@ class postController {
     try {
       const image = req?.file?.path || "";
       const post = req.body.post;
+      const isPublic = req.body.isPublic;
+      console.log(isPublic);
       const existPost = await postModel.findById({ _id: path });
       if (existPost) {
         if (post && image && image !== "") {
           const responseUrl = await cloudinaryService(image);
           await postModel.findByIdAndUpdate(
             { _id: path },
-            { $set: { poster: responseUrl.secure_url, description: post } },
+            {
+              $set: {
+                poster: responseUrl.secure_url,
+                description: post,
+                isPublic: isPublic,
+              },
+            },
             { new: true }
           );
           res.status(200).json({ message: "success edit your post." });
@@ -179,7 +189,7 @@ class postController {
         } else if (post) {
           await postModel.findByIdAndUpdate(
             { _id: path },
-            { $set: { description: post } },
+            { $set: { description: post, isPublic: isPublic } },
             { new: true }
           );
           res.status(200).json({ message: "success edit your post." });

@@ -8,7 +8,7 @@ user.use(express.static(path.resolve(__dirname, "public")));
 const multer = require("multer");
 const uploaderMulter = multer({
   storage: multer.diskStorage({}),
-  limits: { fileSize: 1300000 },
+  limits: { fileSize: 5200000 },
 });
 
 module.exports = uploaderMulter;
