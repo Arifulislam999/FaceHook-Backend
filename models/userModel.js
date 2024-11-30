@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
     default:
       "https://st4.depositphotos.com/5934840/28236/v/450/depositphotos_282365260-stock-illustration-young-man-avatar-cartoon-character.jpg",
   },
+  socketId: {
+    type: String,
+    required: false,
+  }, // To track connected clients
 });
 
 const userModel = mongoose.models.users || mongoose.model("users", userSchema);

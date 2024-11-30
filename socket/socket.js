@@ -1,6 +1,8 @@
 const { Server } = require("socket.io");
 const http = require("http");
 const express = require("express");
+const mongodbTime = require("../utils/mongodbTime");
+const userModel = require("../models/userModel");
 
 const app = express();
 
@@ -33,6 +35,35 @@ io.on("connection", async (socket) => {
       "activeUsers:update",
       activeUsers.map((user) => user.userId)
     );
+  });
+
+  // Save socketId when a user connects
+  socket.on("register", async ({ userId }) => {
+    await userModel.findByIdAndUpdate(
+      userId,
+      { socketId: socket.id },
+      { new: true }
+    );
+    // console.log(`User registered with socket: ${socket.id}`);
+  });
+
+  // Handle sending a message to a specific user
+
+  socket.on("send_message", async ({ senderId, receiverId, message }) => {
+    // sample test further change
+    const receiver = await userModel.findById(receiverId);
+    const sender = await userModel.findById(senderId);
+    if (receiver && receiver?.socketId) {
+      let newMessage = {
+        senderId,
+        receiverId,
+        message,
+        createdAt: mongodbTime(),
+      };
+      io.to(receiver?.socketId).emit("receive_message", newMessage);
+      io.to(sender?.socketId).emit("receive_message", newMessage);
+      io.emit("receive_message_left", newMessage);
+    }
   });
 
   // Handle user disconnection
